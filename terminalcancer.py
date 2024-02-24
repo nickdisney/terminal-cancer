@@ -1,19 +1,31 @@
 import tkinter as tk
-from tkinter import scrolledtext, messagebox
-import threading
+from tkinter import scrolledtext
+from tkinter import messagebox  # Ensure messagebox is imported
 import subprocess
-import shlex
 import logging
 import os
 import openai  # Ensure you have the openai library installed
 import re
-import platform
+import threading
 
 # Initialize logging
 logging.basicConfig(filename='ai_commands.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# IMPORTANT: Reset your OpenAI API key since it was shared
-openai.api_key = 'YOUR_API_KEY_HERE'
+# IMPORTANT: Replace 'xxxx' with your actual OpenAI API key and ensure it's kept secure
+openai.api_key = 'xxxx'
+
+def list_available_commands():
+    path_dirs = os.getenv("PATH").split(os.pathsep)
+    available_commands = set()
+    for directory in path_dirs:
+        try:
+            for item in os.listdir(directory):
+                item_path = os.path.join(directory, item)
+                if os.path.isfile(item_path) and os.access(item_path, os.X_OK):
+                    available_commands.add(item)
+        except FileNotFoundError:
+            continue
+    return available_commands
 
 def extract_command(generated_text):
     pattern = r"```(.*?)```"
@@ -25,14 +37,8 @@ def extract_command(generated_text):
 def log_command_with_details(prompt, command, output, success):
     logging.info(f"Prompt: {prompt}, Command executed: {command}, Success: {success}, Output: {output}")
 
-def get_desktop_path():
-    if platform.system() == "Windows":
-        return os.path.join(os.environ['USERPROFILE'], 'Desktop')
-    else:
-        return os.path.join(os.environ['HOME'], 'Desktop')
-
 def execute_shell_command(command):
-    command = re.sub(r'^```bash|```$', '', command).strip()  # Strip markdown formatting if present
+    command = re.sub(r'^```bash|```$', '', command).strip()
     try:
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         output, error = process.communicate()
@@ -41,14 +47,15 @@ def execute_shell_command(command):
     except subprocess.CalledProcessError as e:
         return e.stderr, False
 
-def generate_follow_up_with_chat_model(prompt, follow_up):
+def generate_follow_up_with_chat_model(prompt, available_commands):
+    command_list = ', '.join(sorted(available_commands))
+    prompt_text = f"{prompt}. Available commands include: {command_list}."
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4-0613",
             messages=[
-                {"role": "system", "content": "You are terminal-cancer running on macOS and you help users control their computer through writing bash programs. Your responses should be a properly created bash program and nothing else. Refrain from explanations."},
-                {"role": "user", "content": prompt},
-                {"role": "assistant", "content": follow_up},
+                {"role": "system", "content": "You are an AI trained to generate bash commands based on available tools. Your responses should be properly crafted programs and nothing else. omit any explanations, respond only in executable code."},
+                {"role": "user", "content": prompt_text},
             ]
         )
         return response.choices[0].message['content']
@@ -67,7 +74,7 @@ class AITerminalGUI:
         self.prompt_label.pack()
         self.prompt_entry = tk.Entry(self.master, width=50)
         self.prompt_entry.pack()
-        self.execute_button = tk.Button(self.master, text="Execute", command=self.execute)
+        self.execute_button = tk.Button(self.master, text="submit", command=self.execute)
         self.execute_button.pack()
         self.ai_response_label = tk.Label(self.master, text="AI Generated Command or Response:")
         self.ai_response_label.pack()
@@ -90,7 +97,8 @@ class AITerminalGUI:
             threading.Thread(target=self.process_prompt, args=(prompt,)).start()
 
     def process_prompt(self, prompt):
-        follow_up_response = generate_follow_up_with_chat_model(prompt, "")
+        available_commands = list_available_commands()
+        follow_up_response = generate_follow_up_with_chat_model(prompt, available_commands)
         self.ai_response_text.insert(tk.END, follow_up_response)
 
     def execute_approved_command(self):
