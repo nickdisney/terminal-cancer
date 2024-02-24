@@ -1,6 +1,5 @@
 import tkinter as tk
-from tkinter import scrolledtext
-from tkinter import messagebox  # Ensure messagebox is imported
+from tkinter import scrolledtext, messagebox
 import subprocess
 import logging
 import os
@@ -54,7 +53,7 @@ def generate_follow_up_with_chat_model(prompt, available_commands):
         response = openai.ChatCompletion.create(
             model="gpt-4-0613",
             messages=[
-                {"role": "system", "content": "You are an AI trained to generate bash commands based on available tools. Your responses should be properly crafted programs and nothing else. omit any explanations, respond only in executable code."},
+                {"role": "system", "content": "You are an AI trained to generate bash commands based on available tools. Your responses should be properly crafted programs and nothing else. Omit any explanations, respond only in executable code."},
                 {"role": "user", "content": prompt_text},
             ]
         )
@@ -67,27 +66,30 @@ class AITerminalGUI:
     def __init__(self, master):
         self.master = master
         master.title("Terminal Cancer")
+        master.configure(bg='black')  # Set background color to black
         self.setup_gui_components()
 
     def setup_gui_components(self):
-        self.prompt_label = tk.Label(self.master, text="Enter your prompt:")
+        self.master.configure(bg='black')
+        self.prompt_label = tk.Label(self.master, text="Enter your prompt:", bg='black', fg='white')
         self.prompt_label.pack()
-        self.prompt_entry = tk.Entry(self.master, width=50)
+        self.prompt_entry = tk.Entry(self.master, width=50, bg='light gray')
         self.prompt_entry.pack()
-        self.execute_button = tk.Button(self.master, text="submit", command=self.execute)
+        self.execute_button = tk.Button(self.master, text="Submit", command=self.execute, bg='light gray')
         self.execute_button.pack()
-        self.ai_response_label = tk.Label(self.master, text="AI Generated Command or Response:")
+        self.ai_response_label = tk.Label(self.master, text="AI Generated Command or Response:", bg='black', fg='white')
         self.ai_response_label.pack()
-        self.ai_response_text = scrolledtext.ScrolledText(self.master, height=5)
+        self.ai_response_text = scrolledtext.ScrolledText(self.master, height=5, bg='light gray')
         self.ai_response_text.pack()
-        self.command_output_label = tk.Label(self.master, text="Command Output:")
-        self.command_output_label.pack()
-        self.command_output_text = scrolledtext.ScrolledText(self.master, height=10)
-        self.command_output_text.pack()
-        self.execute_approved_button = tk.Button(self.master, text="Execute Approved Command", command=self.execute_approved_command)
+        self.execute_approved_button = tk.Button(self.master, text="Execute Approved Command", command=self.execute_approved_command, bg='light gray')
         self.execute_approved_button.pack()
+        self.command_output_label = tk.Label(self.master, text="Command Output:", bg='black', fg='white')
+        self.command_output_label.pack()
+        self.command_output_text = scrolledtext.ScrolledText(self.master, height=10, bg='light gray')
+        self.command_output_text.pack()
 
     def execute(self):
+        self.execute_button.config(text="Processing...", bg='yellow')
         prompt = self.prompt_entry.get()
         if prompt.lower() == 'exit':
             self.master.quit()
@@ -95,6 +97,13 @@ class AITerminalGUI:
             self.ai_response_text.delete('1.0', tk.END)
             self.command_output_text.delete('1.0', tk.END)
             threading.Thread(target=self.process_prompt, args=(prompt,)).start()
+            self.check_thread(threading.current_thread())
+
+    def check_thread(self, thread):
+        if thread.is_alive():
+            self.master.after(100, lambda: self.check_thread(thread))
+        else:
+            self.execute_button.config(text="Submit", bg='light gray')
 
     def process_prompt(self, prompt):
         available_commands = list_available_commands()
