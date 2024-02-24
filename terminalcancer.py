@@ -9,7 +9,7 @@ import os
 logging.basicConfig(filename='ai_commands.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Replace with your actual OpenAI API key
-openai.api_key = 'YOUR_API_KEY_HERE_'
+openai.api_key = 'YOUR-API-KE-HERE'
 
 def extract_command(generated_text):
     pattern = r"```(.*?)```"
@@ -48,7 +48,7 @@ def generate_follow_up_with_chat_model(prompt, follow_up):
         response = openai.ChatCompletion.create(
             model="gpt-4-0613",  # Update as necessary
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "You are terminal-cancer and you help users control their computer through writing bash programs. Your responses should be a properly created bash program and nothing else."},
                 {"role": "user", "content": prompt},
                 {"role": "assistant", "content": follow_up},
             ]
@@ -65,30 +65,17 @@ def main():
         if prompt.lower() == 'exit':
             break
 
-        # Attempt to directly handle the action without executing a command
-        if "create a blank 'helloworld.txt' file on my desktop" in prompt:
-            desktop_path = get_desktop_path()
-            file_path = os.path.join(desktop_path, 'helloworld.txt')
-            try:
-                with open(file_path, 'w') as file:
-                    pass  # Just create the file
-                print(f"Created blank file at: {file_path}")
-                follow_up_info = f"Successfully created 'helloworld.txt' at {desktop_path}."
-            except Exception as e:
-                print(f"Error creating file: {e}")
-                follow_up_info = "Failed to create 'helloworld.txt'."
-        else:
-            # Use AI to generate a command
-            follow_up_response = generate_follow_up_with_chat_model(prompt, "")
-            print(f"AI Generated Command or Response: {follow_up_response}")
+        # Use AI to generate a command
+        follow_up_response = generate_follow_up_with_chat_model(prompt, "")
+        print(f"AI Generated Command or Response: {follow_up_response}")
 
-            # Check if the response seems to be a command and not a conversational reply
-            if follow_up_response.strip() and not follow_up_response.startswith("Hello"):
-                command_output, success = execute_shell_command(follow_up_response)
-                print("Command Output:\n", command_output)
-                log_command(follow_up_response, command_output)
-            else:
-                print("AI Response: ", follow_up_response)
+        # Check if the response seems to be a command and not a conversational reply
+        if follow_up_response.strip() and not follow_up_response.startswith("Hello"):
+            command_output, success = execute_shell_command(follow_up_response)
+            print("Command Output:\n", command_output)
+            log_command(follow_up_response, command_output)
+        else:
+            print("AI Response: ", follow_up_response)
 
 if __name__ == "__main__":
     main()
