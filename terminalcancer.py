@@ -9,7 +9,7 @@ import os
 logging.basicConfig(filename='ai_commands.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Replace with your actual OpenAI API key
-openai.api_key = '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'
+openai.api_key = 'YOUR_API_KEY_HERE_'
 
 def extract_command(generated_text):
     pattern = r"```(.*?)```"
