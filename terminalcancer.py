@@ -9,7 +9,7 @@ import os
 logging.basicConfig(filename='ai_commands.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Replace with your actual OpenAI API key
-openai.api_key = 'YOUR-API-KE-HERE'
+openai.api_key = 'YOUR_API_KEY_HERE'
 
 def extract_command(generated_text):
     pattern = r"```(.*?)```"
@@ -42,13 +42,13 @@ def execute_shell_command(command):
 
 def generate_follow_up_with_chat_model(prompt, follow_up):
     """
-    Generates a follow-up command or response from the AI model based on the prompt and previous output.
+    Generates a follow-up co mmand or response from the AI model based on the prompt and previous output.
     """
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4-0613",  # Update as necessary
             messages=[
-                {"role": "system", "content": "You are terminal-cancer and you help users control their computer through writing bash programs. Your responses should be a properly created bash program and nothing else."},
+                {"role": "system", "content": "You are terminal-cancer running on macOS and you help users control their computer through writing bash programs. Your responses should be a properly created bash program and nothing else. refrain from explanations."},
                 {"role": "user", "content": prompt},
                 {"role": "assistant", "content": follow_up},
             ]
