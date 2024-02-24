@@ -7,12 +7,12 @@ import re
 import platform
 import logging
 import os
-import openai  # Ensure you have the openai library installed
+import openai  
 
-# Initialize logging
+
 logging.basicConfig(filename='ai_commands.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
-# Replace with your actual OpenAI API key
+
 openai.api_key = 'YOUR_API_KEY_HERE'
 
 def extract_command(generated_text):
@@ -55,30 +55,29 @@ def generate_follow_up_with_chat_model(prompt, follow_up):
     except Exception as e:
         print(f"An error occurred: {e}")
         return ""
-
-# GUI Class
+        
 class AITerminalGUI:
     def __init__(self, master):
         self.master = master
         master.title("AI Terminal")
 
-        # Prompt input
+       
         self.prompt_label = tk.Label(master, text="Enter your prompt:")
         self.prompt_label.pack()
         self.prompt_entry = tk.Entry(master, width=50)
         self.prompt_entry.pack()
 
-        # Button to execute
+        
         self.execute_button = tk.Button(master, text="Execute", command=self.execute)
         self.execute_button.pack()
 
-        # AI-generated command/response display
+        
         self.ai_response_label = tk.Label(master, text="AI Generated Command or Response:")
         self.ai_response_label.pack()
         self.ai_response_text = scrolledtext.ScrolledText(master, height=5)
         self.ai_response_text.pack()
 
-        # Command output display
+        
         self.command_output_label = tk.Label(master, text="Command Output:")
         self.command_output_label.pack()
         self.command_output_text = scrolledtext.ScrolledText(master, height=10)
@@ -89,8 +88,8 @@ class AITerminalGUI:
         if prompt.lower() == 'exit':
             self.master.quit()
         else:
-            self.ai_response_text.delete('1.0', tk.END)  # Clear previous content
-            self.command_output_text.delete('1.0', tk.END)  # Clear previous content
+            self.ai_response_text.delete('1.0', tk.END)  
+            self.command_output_text.delete('1.0', tk.END)  
 
             threading.Thread(target=self.process_prompt, args=(prompt,)).start()
 
