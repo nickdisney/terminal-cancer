@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Interaction Terminal</title>
+</head>
+<body>
+    <h1>Ask Me Anything or Enter Command</h1>
+    <form action="/execute" method="post">
+        <input type="text" name="command" placeholder="Ask a question or enter a command...">
+        <button type="submit">Submit</button>
+    </form>
+    {% if response %}
+        <p>Response: {{ response }}</p>
+    {% endif %}
+</body>
+</html>
