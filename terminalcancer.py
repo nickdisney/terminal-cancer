@@ -6,12 +6,12 @@ import os
 import openai  # Ensure you have the openai library installed
 import re
 import threading
-
+import anthropic
 # Initialize logging
 logging.basicConfig(filename='ai_commands.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # IMPORTANT: Replace 'xxxx' with your actual OpenAI API key and ensure it's kept secure
-openai.api_key = 'xxxx'
+anthropic.api_key = 'YOUR_ANTHROPIC_API_KEY'
 
 def list_available_commands():
     path_dirs = os.getenv("PATH").split(os.pathsep)
@@ -46,18 +46,25 @@ def execute_shell_command(command):
     except subprocess.CalledProcessError as e:
         return e.stderr, False
 
+
+
+
+
+
+
+
 def generate_follow_up_with_chat_model(prompt, available_commands):
     command_list = ', '.join(sorted(available_commands))
     prompt_text = f"{prompt}. Available commands include: {command_list}."
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4-0613",
-            messages=[
-                {"role": "system", "content": "You are an AI trained to generate bash commands based on available tools. Your responses should be properly crafted programs and nothing else. Omit any explanations, respond only in executable code."},
-                {"role": "user", "content": prompt_text},
-            ]
-        )
-        return response.choices[0].message['content']
+        response = anthropic.completion.conversation(
+    prompt=prompt_text,
+    model="claude-v1",
+    max_tokens_to_sample=1000,
+    stop_sequences=[],
+    system_prompt="You are an AI trained to generate safe and useful bash commands based on available tools and the user's prompt. Your responses should be properly crafted programs and nothing else. Omit any explanations, respond only in executable code."
+)
+        return response["completion"]
     except Exception as e:
         print(f"An error occurred: {e}")
         return ""
